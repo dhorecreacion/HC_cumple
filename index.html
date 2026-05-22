@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SheetProcess Pro | Procesador de Archivos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-fixed": "#00174b",
+                        "inverse-primary": "#b4c5ff",
+                        "primary-container": "#2563eb",
+                        "tertiary": "#943700",
+                        "outline-variant": "#c3c6d7",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#434655",
+                        "secondary": "#505f76",
+                        "primary": "#004ac6",
+                        "inverse-surface": "#2d3133",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#54647a",
+                        "tertiary-fixed": "#ffdbcd",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "tertiary-container": "#bc4800",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d8dadc",
+                        "on-primary-container": "#eeefff",
+                        "surface-variant": "#e0e3e5",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "background": "#f7f9fb",
+                        "on-tertiary-fixed": "#360f00",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "outline": "#737686",
+                        "inverse-on-surface": "#eff1f3",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-tint": "#0053db",
+                        "secondary-container": "#d0e1fb",
+                        "surface-container-low": "#f2f4f6",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#191c1e",
+                        "surface": "#f7f9fb",
+                        "on-background": "#191c1e",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "on-tertiary-container": "#ffede6",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "secondary-fixed": "#d3e4fe"
+                    },
+                    fontFamily: {
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "mono-md": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-sm": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .header-logos img {
+            height: 32px;
+            width: auto;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen flex flex-col selection:bg-primary-fixed selection:text-on-primary-fixed">
+
+<!-- Top Nav -->
+<header class="bg-surface border-b border-outline-variant flex justify-between items-center px-6 h-16 w-full z-50 sticky top-0">
+    <div class="flex items-center gap-4">
+        <div class="header-logos flex items-center gap-3">
+            <img src="/static/logo-bateas.png" alt="Bateas"/>
+            <img src="/static/logo-dho.png" alt="DHO"/>
+        </div>
+        
+    </div>
+</header>
+
+<main class="flex-grow flex flex-col items-center justify-center px-6 py-12 w-full max-w-5xl mx-auto">
+
+    <!-- Hero -->
+    <div class="text-center mb-10 max-w-2xl">
+        <h1 class="text-3xl font-bold text-on-surface mb-2">Procesador de Archivos HC</h1>
+        <p class="text-base text-on-surface-variant">Sube tu archivo Excel con las hojas <strong>Data</strong>, <strong>Ingresos</strong> y <strong>Ceses</strong> para generar el resultado limpio.</p>
+    </div>
+
+    <!-- Card -->
+    <div class="w-full max-w-xl bg-white p-6 rounded-xl border border-outline-variant shadow-sm transition-all duration-300">
+
+        <!-- Alert -->
+        <div class="mb-4 hidden" id="alert-container">
+            <div class="flex items-center gap-2 p-4 rounded-lg bg-error-container text-on-error-container border border-error/10">
+                <span class="material-symbols-outlined text-[20px]">error</span>
+                <span class="text-sm font-medium" id="alert-text">Mensaje de error</span>
+            </div>
+        </div>
+
+        <!-- Dropzone -->
+        <div class="relative group cursor-pointer border-2 border-dashed border-outline-variant hover:border-primary bg-surface-container-low hover:bg-primary-fixed/10 transition-all rounded-xl p-8 flex flex-col items-center justify-center gap-4" id="dropzone">
+            <input accept=".xlsx" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="file-input" type="file"/>
+
+            <div class="flex flex-col items-center gap-4" id="dropzone-content">
+                <div class="w-16 h-16 bg-surface-container-highest rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-[40px]">upload_file</span>
+                </div>
+                <div class="text-center">
+                    <p class="text-xl font-semibold text-on-surface">Arrastra tu archivo .xlsx aquí</p>
+                    <p class="text-sm text-on-surface-variant mt-1">o haz clic para seleccionar desde tu ordenador</p>
+                </div>
+            </div>
+
+            <!-- File Display -->
+            <div class="hidden mt-4 flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-full border border-outline-variant z-10" id="file-display">
+                <span class="material-symbols-outlined text-primary">description</span>
+                <span class="font-mono-md text-sm text-on-surface" id="file-name">documento.xlsx</span>
+                <button class="material-symbols-outlined text-on-surface-variant hover:text-error text-[18px] z-20 relative" id="remove-file">close</button>
+            </div>
+        </div>
+
+        <!-- Action -->
+        <div class="mt-6">
+            <button class="w-full h-12 bg-outline-variant text-on-surface-variant opacity-50 cursor-not-allowed text-sm font-medium rounded-lg transition-all duration-300 flex items-center justify-center gap-2" disabled id="process-btn">
+                <span class="material-symbols-outlined">settings_suggest</span>
+                Procesar Archivo
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="fixed inset-0 z-[100] glass-panel hidden flex flex-col items-center justify-center p-8" id="loading-state">
+        <div class="relative w-24 h-24 mb-6">
+            <div class="absolute inset-0 border-4 border-primary-fixed rounded-full"></div>
+            <div class="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <span class="material-symbols-outlined text-primary text-[32px]">sync</span>
+            </div>
+        </div>
+        <h3 class="text-2xl font-bold text-on-surface">Procesando archivo...</h3>
+        <p class="text-sm text-on-surface-variant mt-2">Por favor espera, conectando con el servidor.</p>
+    </div>
+</main>
+
+<!-- Success Toast -->
+<div class="fixed bottom-6 right-6 translate-y-20 opacity-0 transition-all duration-500 z-[110]" id="success-toast">
+    <div class="bg-on-primary-fixed text-white px-6 py-4 rounded-xl shadow-xl flex items-center gap-4 border border-outline-variant">
+        <div class="bg-primary p-2 rounded-lg">
+            <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+        </div>
+        <div>
+            <p class="text-sm font-medium">Archivo procesado con éxito</p>
+            <p class="text-xs text-primary-fixed-dim">Descargando reporte...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-surface-container border-t border-outline-variant w-full px-6 py-4">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-3 max-w-5xl mx-auto">
+        <div class="header-logos flex items-center gap-3">
+            <img src="/static/logo-bateas.png" alt="Bateas"/>
+            <img src="/static/logo-dho.png" alt="DHO"/>
+        </div>
+        <span class="text-sm text-on-surface-variant text-center">
+            &copy; 2026 Calidad de Vida &mdash; Direcci&oacute;n de Desarrollo Humano y Organizacional.
+            Todos los derechos reservados.
+        </span>
+    </div>
+</footer>
+
+<script>
+    const dropzone       = document.getElementById('dropzone');
+    const fileInput      = document.getElementById('file-input');
+    const dropzoneContent = document.getElementById('dropzone-content');
+    const fileDisplay    = document.getElementById('file-display');
+    const fileName       = document.getElementById('file-name');
+    const removeFile     = document.getElementById('remove-file');
+    const processBtn     = document.getElementById('process-btn');
+    const loadingState   = document.getElementById('loading-state');
+    const successToast   = document.getElementById('success-toast');
+    const alertContainer = document.getElementById('alert-container');
+    const alertText      = document.getElementById('alert-text');
+
+    let archivoSeleccionado = null;
+
+    const mostrarError = (mensaje) => {
+        alertContainer.classList.remove('hidden');
+        alertText.textContent = mensaje;
+        setTimeout(() => alertContainer.classList.add('hidden'), 5000);
+    };
+
+    const updateUIState = (file) => {
+        if (file) {
+            archivoSeleccionado = file;
+            fileName.textContent = file.name;
+            fileDisplay.classList.remove('hidden');
+            dropzoneContent.classList.add('hidden');
+
+            processBtn.disabled = false;
+            processBtn.classList.remove('bg-outline-variant', 'text-on-surface-variant', 'opacity-50', 'cursor-not-allowed');
+            processBtn.classList.add('bg-primary', 'text-white', 'hover:bg-on-primary-fixed-variant', 'cursor-pointer', 'shadow-md');
+        } else {
+            archivoSeleccionado = null;
+            fileInput.value = '';
+            fileDisplay.classList.add('hidden');
+            dropzoneContent.classList.remove('hidden');
+
+            processBtn.disabled = true;
+            processBtn.classList.add('bg-outline-variant', 'text-on-surface-variant', 'opacity-50', 'cursor-not-allowed');
+            processBtn.classList.remove('bg-primary', 'text-white', 'hover:bg-on-primary-fixed-variant', 'cursor-pointer', 'shadow-md');
+        }
+    };
+
+    const handleFile = (file) => {
+        alertContainer.classList.add('hidden');
+        if (!file) return;
+        if (!file.name.endsWith('.xlsx')) {
+            mostrarError('Formato incorrecto. Solo se aceptan archivos .xlsx');
+            return;
+        }
+        updateUIState(file);
+    };
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleFile(e.target.files[0]);
+    });
+
+    removeFile.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        updateUIState(null);
+    });
+
+    ['dragenter', 'dragover'].forEach(ev => {
+        dropzone.addEventListener(ev, (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-primary', 'bg-primary-fixed/20');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(ev => {
+        dropzone.addEventListener(ev, (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-primary', 'bg-primary-fixed/20');
+        }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+    });
+
+    processBtn.addEventListener('click', async () => {
+        if (!archivoSeleccionado) return;
+
+        loadingState.classList.remove('hidden');
+        processBtn.disabled = true;
+        alertContainer.classList.add('hidden');
+
+        try {
+            const formData = new FormData();
+            formData.append('file', archivoSeleccionado);
+
+            const response = await fetch('/process', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Error HTTP ' + response.status);
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Resultado_Patron.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            successToast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                successToast.classList.add('translate-y-20', 'opacity-0');
+                updateUIState(null);
+            }, 4000);
+
+        } catch (err) {
+            mostrarError(err.message);
+        } finally {
+            loadingState.classList.add('hidden');
+            if (archivoSeleccionado) processBtn.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>
