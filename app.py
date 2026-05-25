@@ -167,9 +167,9 @@ def generar_tarjeta():
     # ── Datos del cumpleañero ──────────────────────────────────────
     dia    = request.args.get('dia',    '').upper()
     mes    = request.args.get('mes',    '').upper()
-    nombre = request.args.get('nombre', '').upper()
-    n1     = request.args.get('N1',     '').upper()
-    area   = request.args.get('area',   '').upper()
+    nombre = request.args.get('nombre', '').title()
+    n1     = request.args.get('N1',     '').title()
+    area   = request.args.get('area',   '').title()
 
     # ── Helper: lee parámetro int de la URL, con default ──────────
     def ip(key, default):
@@ -185,23 +185,32 @@ def generar_tarjeta():
 
         cy = img_h // 2  # centro vertical = 360px
 
-        # ── Fuentes — tamaño ajustable con &fmes= &fdia= etc. ─────
-        ruta_fuente = os.path.join(os.path.dirname(__file__), 'arial.ttf')
+        # ── Fuentes ────────────────────────────────────────────────
+        ruta_fuente      = os.path.join(os.path.dirname(__file__), 'arial.ttf')
+        ruta_fuente_bold = os.path.join(os.path.dirname(__file__), 'arialbd.ttf')
         try:
-            f_mes    = ImageFont.truetype(ruta_fuente, ip('fmes',    15))
-            f_dia    = ImageFont.truetype(ruta_fuente, ip('fdia',    23))
-            f_nombre = ImageFont.truetype(ruta_fuente, ip('fnombre', 32))
-            f_area   = ImageFont.truetype(ruta_fuente, ip('farea',   28))
-            f_n1     = ImageFont.truetype(ruta_fuente, ip('fn1',     19))
+            f_mes    = ImageFont.truetype(ruta_fuente_bold, ip('fmes',    15))
+            f_dia    = ImageFont.truetype(ruta_fuente_bold, ip('fdia',    23))
+            f_nombre = ImageFont.truetype(ruta_fuente,      ip('fnombre', 27))
+            f_area   = ImageFont.truetype(ruta_fuente,      ip('farea',   27))
+            f_n1     = ImageFont.truetype(ruta_fuente,      ip('fn1',     20))
         except IOError:
             f_mes = f_dia = f_nombre = f_area = f_n1 = ImageFont.load_default()
 
         # Ángulo de rotación — CSS rotate(-14deg) = Pillow rotate(14)
         angulo = ip('angulo', 14)
 
-        # ── Posiciones — todas ajustables por URL ─────────────────
-        # Coordenadas escaladas a 1280x720 (factor x2.13 respecto a 600px)
-        # Y es relativo al centro (cy=360). Negativo = arriba, positivo = abajo.
+        # ── Box de centrado para nombre, área y N1 ───────────────────
+        # &box_x1= &box_x2= definen el área horizontal donde se centra el texto
+        # ── Box de centrado (x1=623, x2=1091) medido sobre la imagen real ──
+        box_x1 = ip('box_x1', 623)
+        box_x2 = ip('box_x2', 1091)
+
+        def cx(texto, fuente):
+            ancho = draw.textlength(texto, font=fuente)
+            return box_x1 + (box_x2 - box_x1 - int(ancho)) // 2
+
+        # ── Posiciones: Y fijo por URL, X centrado dentro del box ─────────
         dibujar_texto_rotado(fondo, mes,
             posicion=(ip('xmes', 815), cy + ip('ymes', -525)),
             angulo=angulo, fuente=f_mes, color=(255, 255, 255, 255))
@@ -210,13 +219,13 @@ def generar_tarjeta():
             posicion=(ip('xdia', 830), cy + ip('ydia', -510)),
             angulo=angulo, fuente=f_dia, color=(0, 0, 0, 255))
 
-        draw.text((ip('xnombre', 789), cy + ip('ynombre', -58)),
+        draw.text((cx(nombre, f_nombre), cy + ip('ynombre', -58)),
             nombre, font=f_nombre, fill=(255, 255, 255, 255))
 
-        draw.text((ip('xarea', 789), cy + ip('yarea', -21)),
+        draw.text((cx(area, f_area), cy + ip('yarea', -21)),
             area, font=f_area, fill=(255, 255, 255, 255))
 
-        draw.text((ip('xn1', 747), cy + ip('yn1', 21)),
+        draw.text((ip('xn1', 780), cy + ip('yn1', 21)),
             n1, font=f_n1, fill=(255, 255, 255, 255))
 
         output = io.BytesIO()
