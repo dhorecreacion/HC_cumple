@@ -147,21 +147,29 @@ def process():
 # 2. MOTOR DE IMÁGENES
 # ==========================================
 def dibujar_texto_rotado(fondo, texto, posicion, angulo, fuente, color=(255, 255, 255, 255)):
-    img_txt = Image.new('RGBA', (400, 150), (255, 255, 255, 0))
+    # Canvas 4x para supersampling: dibujamos grande y reducimos con LANCZOS
+    escala = 4
+    canvas_w, canvas_h = 1200, 400
+    img_txt = Image.new('RGBA', (canvas_w * escala, canvas_h * escala), (255, 255, 255, 0))
     d = ImageDraw.Draw(img_txt)
-    d.text((10, 10), texto, font=fuente, fill=color)
-    rotado = img_txt.rotate(angulo, expand=1)
+    fuente_4x = fuente.font_variant(size=fuente.size * escala)
+    d.text((40, 40), texto, font=fuente_4x, fill=color)
+    rotado_4x = img_txt.rotate(angulo, expand=1, resample=Image.Resampling.BICUBIC)
+    rotado = rotado_4x.resize(
+        (rotado_4x.width // escala, rotado_4x.height // escala),
+        Image.Resampling.LANCZOS
+    )
     fondo.paste(rotado, posicion, rotado)
 
 
 @app.route('/generar-tarjeta', methods=['GET'])
 def generar_tarjeta():
     # ── Datos del cumpleañero ──────────────────────────────────────
-    dia    = request.args.get('dia',    '')
+    dia    = request.args.get('dia',    '').upper()
     mes    = request.args.get('mes',    '').upper()
-    nombre = request.args.get('nombre', '')
-    n1     = request.args.get('N1',     '')
-    area   = request.args.get('area',   '')
+    nombre = request.args.get('nombre', '').upper()
+    n1     = request.args.get('N1',     '').upper()
+    area   = request.args.get('area',   '').upper()
 
     # ── Helper: lee parámetro int de la URL, con default ──────────
     def ip(key, default):
@@ -171,22 +179,20 @@ def generar_tarjeta():
         ruta_fondo = os.path.join(os.path.dirname(__file__), 'static', 'pCumple.jpg')
         fondo = Image.open(ruta_fondo).convert("RGBA")
 
-        # Escalar a 600px de ancho (igual que en el HTML)
-        orig_w, orig_h = fondo.size
-        img_w, img_h = 600, int(orig_h * 600 / orig_w)
-        fondo = fondo.resize((img_w, img_h), Image.Resampling.LANCZOS)
-        draw  = ImageDraw.Draw(fondo)
+        # Usar resolución original (1280x720) para máxima calidad
+        _, img_h = fondo.size
+        draw = ImageDraw.Draw(fondo)
 
-        cy = img_h // 2  # centro vertical = referencia base de todos los Y
+        cy = img_h // 2  # centro vertical = 360px
 
         # ── Fuentes — tamaño ajustable con &fmes= &fdia= etc. ─────
         ruta_fuente = os.path.join(os.path.dirname(__file__), 'arial.ttf')
         try:
-            f_mes    = ImageFont.truetype(ruta_fuente, ip('fmes',    9))
-            f_dia    = ImageFont.truetype(ruta_fuente, ip('fdia',    11))
-            f_nombre = ImageFont.truetype(ruta_fuente, ip('fnombre', 15))
-            f_area   = ImageFont.truetype(ruta_fuente, ip('farea',   13))
-            f_n1     = ImageFont.truetype(ruta_fuente, ip('fn1',      9))
+            f_mes    = ImageFont.truetype(ruta_fuente, ip('fmes',    15))
+            f_dia    = ImageFont.truetype(ruta_fuente, ip('fdia',    23))
+            f_nombre = ImageFont.truetype(ruta_fuente, ip('fnombre', 32))
+            f_area   = ImageFont.truetype(ruta_fuente, ip('farea',   28))
+            f_n1     = ImageFont.truetype(ruta_fuente, ip('fn1',     19))
         except IOError:
             f_mes = f_dia = f_nombre = f_area = f_n1 = ImageFont.load_default()
 
@@ -194,32 +200,23 @@ def generar_tarjeta():
         angulo = ip('angulo', 14)
 
         # ── Posiciones — todas ajustables por URL ─────────────────
-        # Y es relativo al centro (cy). Negativo = arriba, positivo = abajo.
-        # &xmes=   &ymes=    → posición del mes  (blanco, rotado)
-        # &xdia=   &ydia=    → posición del día  (negro,  rotado)
-        # &xnombre=&ynombre= → posición del nombre (blanco, recto)
-        # &xarea=  &yarea=   → posición del área   (blanco, recto)
-        # &xn1=    &yn1=     → posición del N1      (blanco, recto)
-        # &fmes=   &fdia=  &fnombre= &farea= &fn1= → tamaños de fuente
-        # &angulo=           → grados de rotación
-
-        # x_paste = x_html - 44  (el texto rotado aparece +44px a la derecha del punto de paste)
-        # y_paste = y_html - 12  (el texto rotado aparece +12px abajo del punto de paste)
+        # Coordenadas escaladas a 1280x720 (factor x2.13 respecto a 600px)
+        # Y es relativo al centro (cy=360). Negativo = arriba, positivo = abajo.
         dibujar_texto_rotado(fondo, mes,
-            posicion=(ip('xmes', 372), cy + ip('ymes', -212)),
+            posicion=(ip('xmes', 815), cy + ip('ymes', -525)),
             angulo=angulo, fuente=f_mes, color=(255, 255, 255, 255))
 
         dibujar_texto_rotado(fondo, dia,
-            posicion=(ip('xdia', 380), cy + ip('ydia', -205)),
+            posicion=(ip('xdia', 830), cy + ip('ydia', -510)),
             angulo=angulo, fuente=f_dia, color=(0, 0, 0, 255))
 
-        draw.text((ip('xnombre', 370), cy + ip('ynombre', -27)),
+        draw.text((ip('xnombre', 789), cy + ip('ynombre', -58)),
             nombre, font=f_nombre, fill=(255, 255, 255, 255))
 
-        draw.text((ip('xarea', 370), cy + ip('yarea', -10)),
-            f"Area: {area}", font=f_area, fill=(255, 255, 255, 255))
+        draw.text((ip('xarea', 789), cy + ip('yarea', -21)),
+            area, font=f_area, fill=(255, 255, 255, 255))
 
-        draw.text((ip('xn1', 350), cy + ip('yn1', 10)),
+        draw.text((ip('xn1', 747), cy + ip('yn1', 21)),
             n1, font=f_n1, fill=(255, 255, 255, 255))
 
         output = io.BytesIO()
