@@ -56,7 +56,7 @@ def index():
 def process():
     if 'file' not in request.files: return jsonify({'error': 'No se envió ningún archivo'}), 400
     file = request.files['file']
-    if not file.filename.endswith('.xlsx'): return jsonify({'error': 'El archivo debe ser .xlsx'}), 400
+    if not file.filename or not file.filename.endswith('.xlsx'): return jsonify({'error': 'El archivo debe ser .xlsx'}), 400
 
     try:
         wb_origen = openpyxl.load_workbook(io.BytesIO(file.read()), data_only=True)
@@ -93,7 +93,8 @@ def process():
 
         wb_nuevo = openpyxl.Workbook()
         ws = wb_nuevo.active
-        assert ws is not None
+        if ws is None:
+            return jsonify({'error': 'No se pudo crear la hoja'}), 500
         ws.title = "Datos Consolidados"
         ws.views.sheetView[0].showGridLines = True
 
@@ -129,8 +130,8 @@ def process():
 
         for col in ws.columns:
             max_len = max(len(str(cell.value or '')) for cell in col)
-            assert col[0].column is not None
-            ws.column_dimensions[get_column_letter(col[0].column)].width = max(max_len + 4, 15)
+            if col[0].column is not None:
+                ws.column_dimensions[get_column_letter(col[0].column)].width = max(max_len + 4, 15)
 
         output = io.BytesIO()
         wb_nuevo.save(output)
@@ -204,8 +205,6 @@ def generar_tarjeta():
         # Ángulo de rotación — CSS rotate(-14deg) = Pillow rotate(14)
         angulo = ip('angulo', 14)
 
-        # ── Box de centrado para nombre, área y N1 ───────────────────
-        # &box_x1= &box_x2= definen el área horizontal donde se centra el texto
         # ── Box de centrado (x1=623, x2=1091) medido sobre la imagen real ──
         box_x1 = ip('box_x1', 623)
         box_x2 = ip('box_x2', 1091)
