@@ -167,7 +167,11 @@ def generar_tarjeta():
     # ── Datos del cumpleañero ──────────────────────────────────────
     dia    = request.args.get('dia',    '').upper()
     mes    = request.args.get('mes',    '').upper()
-    nombre = request.args.get('nombre', '').title()
+    _partes = request.args.get('nombre', '').split()
+    if len(_partes) >= 2:
+        nombre = f"{_partes[-1]} {_partes[0]}".title()
+    else:
+        nombre = " ".join(_partes).title()
     n1     = request.args.get('N1',     '').title()
     area   = request.args.get('area',   '').title()
 
