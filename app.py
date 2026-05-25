@@ -222,7 +222,10 @@ def generar_tarjeta():
         output = io.BytesIO()
         fondo.save(output, format="PNG")
         output.seek(0)
-        return send_file(output, mimetype='image/png')
+        response = send_file(output, mimetype='image/png')
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        return response
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
