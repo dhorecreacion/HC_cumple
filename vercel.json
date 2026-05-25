@@ -4,5 +4,15 @@
   ],
   "routes": [
     { "src": "/(.*)", "dest": "app.py" }
+  ],
+  "headers": [
+    {
+      "source": "/generar-tarjeta",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Vary", "value": "*" }
+      ]
+    }
   ]
 }
