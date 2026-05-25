@@ -191,12 +191,12 @@ def generar_tarjeta():
         cy = img_h // 2  # centro vertical = 360px
 
         # ── Fuentes ────────────────────────────────────────────────
-        ruta_fuente      = os.path.join(os.path.dirname(__file__), 'arial.ttf')
-        ruta_fuente_bold = os.path.join(os.path.dirname(__file__), 'arialbd.ttf')
+        ruta_fuente      = os.path.join(os.path.dirname(__file__), 'calibri.ttf')
+        ruta_fuente_bold = os.path.join(os.path.dirname(__file__), 'calibrib.ttf')
         try:
             f_mes    = ImageFont.truetype(ruta_fuente_bold, ip('fmes',    15))
             f_dia    = ImageFont.truetype(ruta_fuente_bold, ip('fdia',    23))
-            f_nombre = ImageFont.truetype(ruta_fuente,      ip('fnombre', 27))
+            f_nombre = ImageFont.truetype(ruta_fuente,      ip('fnombre', 32))
             f_area   = ImageFont.truetype(ruta_fuente,      ip('farea',   27))
             f_n1     = ImageFont.truetype(ruta_fuente,      ip('fn1',     20))
         except IOError:
@@ -222,14 +222,14 @@ def generar_tarjeta():
             posicion=(ip('xdia', 830), cy + ip('ydia', -510)),
             angulo=angulo, fuente=f_dia, color=(0, 0, 0, 255))
 
-        draw.text((cx(nombre, f_nombre), cy + ip('ynombre', -58)),
+        draw.text((cx(nombre, f_nombre), cy + ip('ynombre', -56)),
             nombre, font=f_nombre, fill=(255, 255, 255, 255))
 
         draw.text((cx(area, f_area), cy + ip('yarea', -21)),
             area, font=f_area, fill=(255, 255, 255, 255))
 
-        draw.text((ip('xn1', 780), cy + ip('yn1', 21)),
-            n1, font=f_n1, fill=(255, 255, 255, 255))
+       # draw.text((ip('xn1', 780), cy + ip('yn1', 21)),
+        #    n1, font=f_n1, fill=(255, 255, 255, 255))
 
         output = io.BytesIO()
         fondo.save(output, format="PNG")
