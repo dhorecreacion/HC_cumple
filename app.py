@@ -235,8 +235,9 @@ def generar_tarjeta():
         fondo.save(output, format="PNG")
         output.seek(0)
         response = send_file(output, mimetype='image/png')
-        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
-        response.headers['Pragma'] = 'no-cache'
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma']        = 'no-cache'
+        response.headers['Expires']       = '0'
         return response
 
     except Exception as e:
